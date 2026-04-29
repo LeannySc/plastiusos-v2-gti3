@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.navbar-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.hero-gradient {
+  background:
+    radial-gradient(
+      ellipse at 15% 0%,
+      rgba(16, 185, 129, 0.15) 0%,
+      transparent 50%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+}
+
+.nav-item-base {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
