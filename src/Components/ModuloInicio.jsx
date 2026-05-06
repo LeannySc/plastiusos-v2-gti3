@@ -18,13 +18,22 @@ const ModuloInicio = () => {
         const res = await fetch(`${API_BASE_URL}/puntos/todos`);
         const data = await res.json();
 
-        if (isMounted) {
+        if (res.ok && Array.isArray(data)) {
           setPuntos(data);
+        } else {
+          console.error("Respuestas no valida del radae:", data);
+          setPuntos([]);
+        }
+
+        if (isMounted) {
+          // ✅ SEGURIDAD: Solo guardamos si 'data' es realmente una lista
+          setPuntos(Array.isArray(data) ? data : []);
           setLoading(false);
         }
       } catch (error) {
-        console.error("❌ Fallo crítico en el túnel hacia Java:", error);
-        if (isMounted) setLoading(false);
+        console.error("Fallo crítico:", error);
+        setPuntos([]); // Lista vacía para evitar crash
+        setLoading(false);
       }
     };
 
@@ -83,7 +92,7 @@ const ModuloInicio = () => {
             {/* Enviamos los datos reales capturados de Java */}
             <MapaComando
               onSelectPunto={setPuntoSeleccionado}
-              puntosData={puntos}
+              puntosData={puntos.filter((p) => p.activo === true)}
             />
           </div>
         </div>

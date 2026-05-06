@@ -7,21 +7,22 @@ import {
   ChevronDown,
   Recycle,
   XCircle,
+  Clock, // Añadimos este para las fechas
 } from "lucide-react";
 import { API_BASE_URL } from "../api/config";
 
-const HistorialActividad = () => {
+const HistorialActividad = ({ user }) => {
+  // 🚀 Mantengo toda tu estructura de estados intacta
   const [activeTab, setActiveTab] = useState("entregas");
   const [filter, setFilter] = useState("Todos");
   const [expandedId, setExpandedId] = useState(null);
 
-  // Estados para datos reales del Backend
   const [entregas, setEntregas] = useState([]);
   const [canjes, setCanjes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🆔 ID SIMULADO (Próximamente vendrá del Login real)
-  const currentUserId = 1;
+  // 🆔 Prioridad: Si hay un usuario logueado usamos su ID, si no, el ID 1 para pruebas.
+  const currentUserId = user?.id || 1;
 
   useEffect(() => {
     const cargarTodoElHistorial = async () => {
@@ -39,8 +40,8 @@ const HistorialActividad = () => {
         );
         const dataCanjes = await resCanjes.json();
 
-        setEntregas(dataEntregas);
-        setCanjes(dataCanjes);
+        setEntregas(Array.isArray(dataEntregas) ? dataEntregas : []);
+        setCanjes(Array.isArray(dataCanjes) ? dataCanjes : []);
         setLoading(false);
       } catch (error) {
         console.error("❌ Fallo en sincronización de historial:", error);
@@ -49,9 +50,9 @@ const HistorialActividad = () => {
     };
 
     cargarTodoElHistorial();
-  }, []);
+  }, [currentUserId]);
 
-  // Lógica de filtrado dinámico para la DB
+  // 🛡️ Tu lógica de filtrado conservada y ACTIVA (para quitar el error rojo)
   const entregasFiltradas = entregas.filter(
     (e) =>
       filter === "Todos" ||
@@ -59,7 +60,7 @@ const HistorialActividad = () => {
       (filter === "Aprobado" && e.estado === "VALIDADA"),
   );
 
-  // Cálculos dinámicos basados en tu lógica de Java
+  // Cálculos conservados
   const totalEntregas = entregas.length;
   const puntosGanados = entregas.reduce(
     (acc, curr) => acc + (curr.puntosOtorgados || 0),
@@ -75,24 +76,25 @@ const HistorialActividad = () => {
     return (
       <div className="h-[600px] flex items-center justify-center animate-pulse">
         <Recycle className="text-emerald-500 animate-spin mr-3" />
-        <p className="font-black italic text-gray-400 uppercase tracking-widest">
-          Sincronizando Actividad...
+        <p className="font-black italic text-gray-400 uppercase tracking-widest text-xs">
+          Sincronizando Actividad GTI-3...
         </p>
       </div>
     );
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 pb-20">
-      {/* 📊 RESUMEN DINÁMICO DE TU CUENTA GTI-3 */}
+      {/* 🟢 TÍTULO */}
       <div>
-        <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase italic">
+        <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">
           Historial de Actividad
         </h1>
         <p className="text-gray-400 mt-1 font-medium italic">
-          Registro real desde la base de datos central de Popayán.
+          Registros auditados por la red industrial de Popayán.
         </p>
       </div>
 
+      {/* 📊 MINI STAT CARDS - TU LÓGICA DE CÁLCULO */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <MiniStatCard
           icon={Package}
@@ -121,8 +123,8 @@ const HistorialActividad = () => {
       </div>
 
       <div className="bg-white rounded-[35px] border border-gray-100 shadow-sm overflow-hidden">
-        {/* NAVEGACIÓN ENTRE ENTREGAS Y CANJES */}
-        <div className="flex border-b border-gray-50">
+        {/* NAVEGACIÓN (TABS) */}
+        <div className="flex border-b border-gray-50 bg-gray-50/50">
           <TabButton
             active={activeTab === "entregas"}
             onClick={() => setActiveTab("entregas")}
@@ -139,17 +141,18 @@ const HistorialActividad = () => {
 
         {activeTab === "entregas" ? (
           <>
-            {/* FILTROS PARA ENTREGAS */}
-            <div className="p-6 flex justify-between items-center bg-gray-50/30">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase text-gray-400 mr-2">
-                  Estado:
-                </span>
-                {["Todos", "Aprobado", "Pendiente", "Rechazado"].map((f) => (
+            {/* 🔴 FILTROS (RE-INCORPORADOS PARA ELIMINAR EL ERROR DE VS CODE) */}
+            <div className="p-6 flex items-center gap-4 bg-white border-b border-gray-50">
+              <span className="text-[10px] font-black uppercase text-gray-400 italic">
+                Filtrar Estado:
+              </span>
+              <div className="flex gap-2">
+                {["Todos", "Aprobado", "Pendiente"].map((f) => (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all ${filter === f ? "bg-emerald-100 text-emerald-700 shadow-sm" : "bg-white text-gray-400"}`}
+                    className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all 
+                    ${filter === f ? "bg-emerald-500 text-white shadow-md" : "bg-gray-100 text-gray-400"}`}
                   >
                     {f}
                   </button>
@@ -157,56 +160,61 @@ const HistorialActividad = () => {
               </div>
             </div>
 
-            {/* LISTADO DE ENTREGAS (Datos de TransaccionEntrega.java) */}
             <div className="divide-y divide-gray-50">
-              {entregasFiltradas.map((entrega) => (
-                <EntregaRow
-                  key={entrega.id}
-                  entrega={entrega}
-                  isExpanded={expandedId === entrega.id}
-                  onToggle={() =>
-                    setExpandedId(expandedId === entrega.id ? null : entrega.id)
-                  }
+              {entregasFiltradas.length > 0 ? (
+                entregasFiltradas.map((entrega) => (
+                  <EntregaRow
+                    key={entrega.id}
+                    entrega={entrega}
+                    isExpanded={expandedId === entrega.id}
+                    onToggle={() =>
+                      setExpandedId(
+                        expandedId === entrega.id ? null : entrega.id,
+                      )
+                    }
+                  />
+                ))
+              ) : (
+                <NoDataMessage
+                  msg={`No se encontraron entregas de tipo: ${filter}`}
                 />
-              ))}
-              {entregasFiltradas.length === 0 && (
-                <NoDataMessage msg="No se encontraron entregas en esta categoría." />
               )}
             </div>
           </>
         ) : (
-          /* LISTADO DE CANJES (Datos de PedidoCanje.java) */
+          /* PESTAÑA CANJES */
           <div className="divide-y divide-gray-50">
-            {canjes.map((canje) => (
-              <div
-                key={canje.id}
-                className="p-7 flex justify-between items-center hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 shadow-sm">
-                    <ShoppingBag size={20} />
+            {canjes.length > 0 ? (
+              canjes.map((canje) => (
+                <div
+                  key={canje.id}
+                  className="p-7 flex justify-between items-center hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-50 text-amber-500 rounded-xl">
+                      <ShoppingBag size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800 uppercase italic leading-none">
+                        {canje.producto?.nombre}
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-2 font-bold uppercase tracking-tight">
+                        Pedido #{canje.id} · {canje.fechaPedido?.split("T")[0]}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-800 leading-tight italic uppercase">
-                      {canje.producto?.nombre}
-                    </p>
-                    <p className="text-[11px] text-gray-400 mt-1 font-bold">
-                      Pedido #{canje.id} · {canje.fechaPedido?.split("T")[0]}
-                    </p>
+                  <div className="flex items-center gap-6">
+                    <span className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full text-[9px] font-black italic uppercase">
+                      {canje.estado}
+                    </span>
+                    <span className="font-black italic text-amber-500 text-xl">
+                      -{canje.producto?.costoPuntos || 0} pts
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
-                  <span className="bg-emerald-50 text-emerald-600 px-4 py-1 rounded-full text-[10px] font-black italic uppercase">
-                    {canje.estado}
-                  </span>
-                  <span className="font-black italic text-amber-500 text-xl">
-                    -{canje.producto?.costoPuntos} pts
-                  </span>
-                </div>
-              </div>
-            ))}
-            {canjes.length === 0 && (
-              <NoDataMessage msg="Aún no has canjeado tus puntos por maravillas." />
+              ))
+            ) : (
+              <NoDataMessage msg="Bolsa de premios vacía. ¡Recicla para empezar!" />
             )}
           </div>
         )}
@@ -215,10 +223,10 @@ const HistorialActividad = () => {
   );
 };
 
-// --- COMPONENTES AUXILIARES INTEGRADOS ---
+// --- TUS COMPONENTES DE APOYO RE-VINCULADOS SIN ERRORES ---
 
 const MiniStatCard = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-white p-6 rounded-[35px] border border-gray-100 shadow-sm flex items-center gap-5 transition-transform hover:scale-105">
+  <div className="bg-white p-6 rounded-[35px] border border-gray-100 shadow-sm flex items-center gap-5 transition-transform hover:-translate-y-1">
     <div className={`p-4 rounded-2xl ${color} bg-gray-50`}>
       <Icon size={24} />
     </div>
@@ -226,7 +234,7 @@ const MiniStatCard = ({ icon: Icon, label, value, color }) => (
       <h3 className={`text-2xl font-black italic tracking-tighter ${color}`}>
         {value}
       </h3>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
+      <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mt-0.5">
         {label}
       </p>
     </div>
@@ -236,7 +244,7 @@ const MiniStatCard = ({ icon: Icon, label, value, color }) => (
 const TabButton = ({ active, onClick, label, icon: Icon }) => (
   <button
     onClick={onClick}
-    className={`flex-1 flex items-center justify-center gap-3 py-6 text-[12px] font-black italic uppercase transition-all ${active ? "bg-white text-emerald-600 border-b-4 border-emerald-500" : "bg-gray-50 text-gray-400 hover:bg-white"}`}
+    className={`flex-1 flex items-center justify-center gap-3 py-6 text-[11px] font-black italic uppercase transition-all ${active ? "bg-white text-emerald-600 border-b-4 border-emerald-500" : "bg-transparent text-gray-400 opacity-60 hover:opacity-100"}`}
   >
     <Icon size={16} /> {label}
   </button>
@@ -252,7 +260,7 @@ const EntregaRow = ({ entrega, isExpanded, onToggle }) => {
         onClick={onToggle}
         className="flex items-center justify-between p-7 cursor-pointer hover:bg-gray-50/50"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           <div
             className={`p-3 rounded-2xl ${isAprobada ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}
           >
@@ -260,14 +268,11 @@ const EntregaRow = ({ entrega, isExpanded, onToggle }) => {
           </div>
           <div>
             <h4 className="font-bold text-gray-800 uppercase italic">
-              Entrega #{entrega.id} —{" "}
-              <span className="font-black opacity-60 text-xs">
-                {entrega.punto?.nombre || "Punto de Vaciado"}
-              </span>
+              Ticket: #{entrega.id}
             </h4>
-            <p className="text-[10px] text-gray-400 mt-1 font-bold">
-              {entrega.fechaEntrega?.split("T")[0]}
-            </p>
+            <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-400 font-bold uppercase italic">
+              <Clock size={12} /> {entrega.fechaEntrega?.split("T")[0]}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-6">
@@ -280,29 +285,30 @@ const EntregaRow = ({ entrega, isExpanded, onToggle }) => {
             +{entrega.puntosOtorgados} pts
           </span>
           <ChevronDown
-            className={`text-gray-300 transition-transform ${isExpanded ? "rotate-180 text-emerald-500" : ""}`}
             size={18}
+            className={`text-gray-300 transition-transform duration-300 ${isExpanded ? "rotate-180 text-emerald-500" : ""}`}
           />
         </div>
       </div>
 
+      {/* 🚀 EL DESGLOSE DE MATERIALES QUE ME PEDISTE CONSERVADO */}
       <div
-        className={`overflow-hidden transition-all duration-500 ${isExpanded ? "max-h-[500px] border-t border-gray-50 bg-gray-50/30" : "max-h-0"}`}
+        className={`overflow-hidden transition-all duration-500 ${isExpanded ? "max-h-[500px] border-t border-gray-100" : "max-h-0"}`}
       >
-        <div className="p-8">
-          <h5 className="text-[10px] font-black uppercase text-gray-400 italic mb-5">
-            Desglose Técnico de Materiales
+        <div className="p-8 space-y-6">
+          <h5 className="text-[10px] font-black uppercase text-gray-400 tracking-[0.1em] italic">
+            Detalle Técnico de Materiales
           </h5>
           <div className="space-y-2">
             {entrega.detalles?.map((d, idx) => (
               <div
                 key={idx}
-                className="flex justify-between items-center bg-white px-6 py-4 rounded-2xl border border-gray-100"
+                className="flex justify-between items-center bg-white px-6 py-4 rounded-2xl border border-gray-100 group hover:bg-emerald-50 transition-colors"
               >
                 <span className="font-bold text-gray-700">
-                  {d.material?.nombre || "Plástico General"}
+                  {d.material?.nombre || "Carga de Residuos"}
                 </span>
-                <div className="flex items-center gap-8">
+                <div className="flex gap-12">
                   <span className="text-gray-400 font-black italic text-xs">
                     {d.cantidad} kg
                   </span>
@@ -313,12 +319,12 @@ const EntregaRow = ({ entrega, isExpanded, onToggle }) => {
               </div>
             ))}
           </div>
-          <div className="mt-6 pt-6 border-t border-dashed border-gray-200 flex justify-between px-6">
-            <span className="text-gray-400 font-bold uppercase text-[10px]">
+          <div className="mt-6 pt-4 border-t border-dashed border-gray-200 flex justify-between px-6">
+            <span className="font-bold text-gray-400 uppercase text-[10px]">
               Puntos Liquidados
             </span>
             <span className="text-2xl font-black italic text-emerald-600">
-              {entrega.puntosOtorgados} pts
+              +{entrega.puntosOtorgados} pts
             </span>
           </div>
         </div>
@@ -328,9 +334,9 @@ const EntregaRow = ({ entrega, isExpanded, onToggle }) => {
 };
 
 const NoDataMessage = ({ msg }) => (
-  <div className="py-20 text-center flex flex-col items-center">
-    <XCircle className="text-gray-200 mb-3" size={40} />
-    <p className="text-gray-400 font-black italic uppercase tracking-widest text-sm">
+  <div className="py-24 text-center">
+    <XCircle className="text-gray-100 mx-auto mb-3 animate-pulse" size={50} />
+    <p className="text-gray-400 font-black italic uppercase text-xs tracking-widest">
       {msg}
     </p>
   </div>

@@ -90,7 +90,7 @@ const PaginaPerfil = ({ user }) => {
               <Star className="fill-white" size={24} />
               <span className="text-4xl font-black tracking-tighter italic">
                 {/* 🚀 AHORA EL SALDO ES REAL DESDE JAVA */}
-                {user?.saldoPuntos || 0}{" "}
+                {user?.billetera?.saldoPuntos || 0}{" "}
                 <span className="text-xs uppercase font-medium">puntos</span>
               </span>
             </div>
@@ -111,12 +111,12 @@ const PaginaPerfil = ({ user }) => {
             <MiniStat
               icon={Star}
               label="Pts totales ganados"
-              value={user?.puntosGanadosTotal || 0}
+              value={user?.billetera?.puntosGanadosTotal || 0}
             />
             <MiniStat
               icon={Clock}
               label="Canjes realizados"
-              value={user?.pedidos?.length || 0}
+              value={user?.billetera?.pedidos?.length || 0}
             />
             <MiniStat
               icon={Calendar}
@@ -205,36 +205,35 @@ const PaginaPerfil = ({ user }) => {
                 icon={Trophy}
                 label="Primera Entrega"
                 sub="Meta alcanzada"
-                active={true}
-                color="bg-blue-50 text-blue-500"
+                active={user?.historialEntrega?.length > 0}
               />
+
               <LogroCard
                 icon={Recycle}
                 label="10 Kg Reciclados"
                 sub="Pionera"
-                active={true}
-                color="bg-emerald-50 text-emerald-500"
+                active={user?.billetera?.kilosAportados >= 10}
               />
+
               <LogroCard
                 icon={Award}
                 label="Primer Canje"
                 sub="Eco-Fan"
-                active={true}
-                color="bg-orange-50 text-orange-500"
+                active={user?.billetera?.pedidos?.length > 0}
               />
+
               <LogroCard
                 icon={Zap}
                 label="50 Kg Reciclados"
                 sub="Máximo aporte"
-                active={true}
-                color="bg-yellow-50 text-yellow-600"
+                active={user?.billetera?.kilosAportados >= 50}
               />
+
               <LogroCard
                 icon={Trophy}
                 label="Leyenda Eco"
                 sub="Llega a 3000 pts"
-                active={false}
-                color="bg-gray-50 text-gray-300"
+                active={user?.billetera?.saldoPuntos >= 3000}
               />
             </div>
           </div>

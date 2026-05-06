@@ -4,6 +4,8 @@ import {
   MapPin,
   ShoppingBag,
   Users,
+  Zap,
+  EyeOff,
 } from "lucide-react";
 
 const AdminSidebar = ({ activeTab, setTab }) => {
@@ -13,6 +15,8 @@ const AdminSidebar = ({ activeTab, setTab }) => {
     { id: "points", label: "Puntos de Recolección", icon: MapPin },
     { id: "catalog", label: "Catálogo", icon: ShoppingBag },
     { id: "users", label: "Usuarios", icon: Users },
+    { id: "misiones", label: "Misiones Rápidas", icon: Zap },
+    { id: "bodega", label: "Bodega Técnica", icon: EyeOff },
   ];
 
   return (

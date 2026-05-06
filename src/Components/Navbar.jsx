@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import UserDropdown from "./Profile/UserDropdown";
+import NotificationBell from "./Profile/NotificationBell";
 
 const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -60,29 +61,40 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
             onClick={() => setActiveTab("puntos")}
           />
           <NavItem
-            icon={ShoppingBag}
-            label="Catálogo"
-            active={activeTab === "catalogo"}
-            isLocked={!user}
-            onClick={() => setActiveTab("catalogo")}
-          />
-          <NavItem
             icon={History}
             label="Historial"
             active={activeTab === "historial"}
             isLocked={!user}
             onClick={() => setActiveTab("historial")}
-          />
+          />{" "}
+          {user?.rol !== "ENCARGADO" && (
+            <NavItem
+              icon={ShoppingBag}
+              label="Catálogo"
+              active={activeTab === "catalogo"}
+              isLocked={!user}
+              onClick={() => setActiveTab("catalogo")}
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-3">
           {user && (
-            <div className="bg-[#ecfdf5] border border-[#10b981]/20 px-3 py-1.5 rounded-full flex items-center gap-2">
-              <Star size={16} className="text-[#10b981] fill-current" />
-              <span className="text-[#065f46] font-bold text-sm">
-                {user.saldoPuntos || 0} pts
-              </span>
-            </div>
+            <>
+              {/* 🔔 CAMPANITA (NO afecta estilos existentes) */}
+              <NotificationBell user={user} />
+
+              {/* ⭐ TU BLOQUE ORIGINAL (solo lógica cambiada) */}
+              <div className="bg-[#ecfdf5] border border-[#10b981]/20 px-3 py-1.5 rounded-full flex items-center gap-2">
+                <Star size={16} className="text-[#10b981] fill-current" />
+                <span className="text-[#065f46] font-bold text-sm">
+                  {user.rol === "RECICLADOR"
+                    ? user.billetera?.saldoPuntos || 0
+                    : 0}{" "}
+                  pts
+                </span>
+              </div>
+            </>
           )}
 
           <div className="relative">

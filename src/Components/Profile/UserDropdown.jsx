@@ -1,4 +1,4 @@
-import { User, Settings, LogOut, ChevronRight } from "lucide-react";
+import { User, Settings, LogOut, ChevronRight, Scale } from "lucide-react";
 
 const UserDropdown = ({
   isOpen,
@@ -44,6 +44,17 @@ const UserDropdown = ({
               onClose();
             }}
           />
+          {/* 🚀 Opción 2: TERMINAL DE PESAJE (Para Encargado y Admin) */}
+          {(user.rol === "ENCARGADO" || user.rol === "ADMINISTRADOR") && (
+            <MenuOption
+              icon={Scale}
+              label="Terminal de Pesaje"
+              onClick={() => {
+                setActiveTab("manual");
+                onClose();
+              }}
+            />
+          )}
           {/* Solo mostramos Panel Admin si el rol es correcto */}
           {user.rol === "ADMINISTRADOR" && (
             <MenuOption

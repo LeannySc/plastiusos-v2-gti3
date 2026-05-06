@@ -10,9 +10,10 @@ import PaginaPerfil from "./Components/PaginaPerfil";
 import Registro from "./Components/Auth/Registro";
 import Login from "./Components/Auth/Login";
 import AdminPanel from "./Components/Admin/AdminPanel";
+import PanelEncargado from "./Components/Admin/AdminViews/PanelEncargado";
 
 function App() {
-  // 🟢 AHORA: Intentamos cargar usuario real guardado en memoria del navegador
+  // 🟢 Carga del usuario persistente
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("gti_user");
     return savedUser ? JSON.parse(savedUser) : null;
@@ -20,11 +21,15 @@ function App() {
 
   const [activeTab, setActiveTab] = useState("inicio");
 
-  // Al guardar el usuario, lo persistimos físicamente
+  // Manejo de eventos
   const handleLoginSuccess = (usuarioReal) => {
     setUser(usuarioReal);
     localStorage.setItem("gti_user", JSON.stringify(usuarioReal));
     setActiveTab("inicio");
+  };
+  const updateBalanceSilently = (usuarioActualizado) => {
+    setUser(usuarioActualizado);
+    localStorage.setItem("gti_user", JSON.stringify(usuarioActualizado));
   };
 
   const handleLogout = () => {
@@ -33,48 +38,67 @@ function App() {
     setActiveTab("inicio");
   };
 
+  // 🔥 SOLUCIÓN SENIOR: En lugar de un useEffect con "setActiveTab",
+  // decidimos QUÉ mostrar antes de entrar al return.
+  const esRutaPublica = ["inicio", "registro", "login"].includes(activeTab);
+
+  // Si intenta entrar a una privada sin usuario, mostramos el "inicio" por defecto
+  // pero sin disparar un setStatus infinito.
+  const tabRealAMostrar = !user && !esRutaPublica ? "inicio" : activeTab;
+
   return (
-    <div className="min-h-screen bg-[#f9fafb] font-sans pb-20">
+    <div className="min-h-screen bg-[#f9fafb] font-sans pb-20 text-slate-900">
       <Navbar
-        activeTab={activeTab}
+        activeTab={tabRealAMostrar} // Pasamos el tab verificado
         setActiveTab={setActiveTab}
         user={user}
         onLogout={handleLogout}
       />
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-10">
-        {/* MODULOS PÚBLICOS */}
-        {activeTab === "inicio" && <ModuloInicio />}
-        {activeTab === "registro" && (
+        {/* --- MODULOS SIEMPRE DISPONIBLES O PÚBLICOS --- */}
+        {tabRealAMostrar === "inicio" && <ModuloInicio />}
+
+        {tabRealAMostrar === "registro" && (
           <Registro
             onBack={() => setActiveTab("login")}
             onRegSuccess={() => setActiveTab("login")}
           />
         )}
-        {activeTab === "login" && (
+
+        {tabRealAMostrar === "login" && (
           <Login
             onRegister={() => setActiveTab("registro")}
             onLoginSuccess={handleLoginSuccess}
           />
         )}
 
-        {/* MODULOS PROTEGIDOS POR BASE DE DATOS */}
-        {user ? (
+        {/* --- MODULOS PROTEGIDOS GTI-3 (Solo si existe 'user') --- */}
+        {user && (
           <>
-            {activeTab === "puntos" && <PuntosRecoleccion />}
-            {activeTab === "catalogo" && <CatalogoPremios />}
-            {activeTab === "historial" && <HistorialActividad user={user} />}
-            {activeTab === "dashboard" && (
+            {tabRealAMostrar === "dashboard" && (
               <DashboardMaestro user={user} setActiveTab={setActiveTab} />
             )}
-            {activeTab === "perfil" && <PaginaPerfil user={user} />}
-            {activeTab === "admin" && <AdminPanel />}
+
+            {tabRealAMostrar === "puntos" && <PuntosRecoleccion />}
+
+            {/* Blindaje por rol */}
+            {tabRealAMostrar === "catalogo" && user.rol !== "ENCARGADO" && (
+              <CatalogoPremios user={user} setUsuario={updateBalanceSilently} />
+            )}
+
+            {tabRealAMostrar === "historial" && (
+              <HistorialActividad user={user} />
+            )}
+
+            {tabRealAMostrar === "perfil" && <PaginaPerfil user={user} />}
+
+            {tabRealAMostrar === "manual" && user.rol === "ENCARGADO" && (
+              <PanelEncargado user={user} />
+            )}
+
+            {tabRealAMostrar === "admin" && <AdminPanel />}
           </>
-        ) : (
-          activeTab !== "inicio" &&
-          activeTab !== "registro" &&
-          activeTab !== "login" &&
-          setActiveTab("inicio")
         )}
       </main>
     </div>
