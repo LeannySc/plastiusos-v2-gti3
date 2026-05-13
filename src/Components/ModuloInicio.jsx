@@ -88,7 +88,7 @@ const ModuloInicio = () => {
               Monitor en Tiempo Real
             </h2>
           </div>
-          <div className="h-[700px] shadow-2xl rounded-[45px] overflow-hidden border-4 border-white">
+          <div className="h-[500px] md:h-[600px] lg:h-[700px] shadow-2xl rounded-[45px] overflow-hidden border-4 border-white relative z-0">
             {/* Enviamos los datos reales capturados de Java */}
             <MapaComando
               onSelectPunto={setPuntoSeleccionado}
@@ -98,7 +98,7 @@ const ModuloInicio = () => {
         </div>
 
         {/* Panel lateral con contadores reales */}
-        <div className="w-full lg:w-[28%] pt-20">
+        <div className="w-full lg:w-[28%] pt-0 lg:pt-20">
           <PanelStatus selectedPunto={puntoSeleccionado} listaPuntos={puntos} />
         </div>
       </div>
