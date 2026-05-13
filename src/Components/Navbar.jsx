@@ -137,7 +137,7 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   );
 };
 
-// 🛡️ Componente Interno Limpio para NavItem
+// 🛡️ Componente Interno Limpio para NavItem (Desktop)
 const NavItem = ({ icon: Icon, label, active, onClick, isLocked }) => (
   <button
     onClick={!isLocked ? onClick : null}
@@ -149,6 +149,26 @@ const NavItem = ({ icon: Icon, label, active, onClick, isLocked }) => (
       <Icon size={18} />
       {isLocked && (
         <div className="absolute -top-1 -right-1 bg-amber-400 p-0.5 rounded-full border border-white animate-bounce">
+          <Lock size={6} className="text-white fill-white" />
+        </div>
+      )}
+    </div>
+    {label}
+  </button>
+);
+
+// 📱 Componente para Mobile NavItem (más compacto)
+const MobileNavItem = ({ icon: Icon, label, active, onClick, isLocked }) => (
+  <button
+    onClick={!isLocked ? onClick : null}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all relative
+    ${isLocked ? "opacity-40 grayscale cursor-not-allowed" : "cursor-pointer"}
+    ${active ? "bg-emerald-50 text-[#10b981]" : "text-gray-600 hover:bg-gray-50"}`}
+  >
+    <div className="relative">
+      <Icon size={18} />
+      {isLocked && (
+        <div className="absolute -top-1 -right-1 bg-amber-400 p-0.5 rounded-full border border-white">
           <Lock size={6} className="text-white fill-white" />
         </div>
       )}

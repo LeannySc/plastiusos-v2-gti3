@@ -13,9 +13,9 @@ const UserDropdown = ({
   return (
     <>
       {/* Capa invisible para cerrar al hacer clic fuera */}
-      <div className="fixed inset-0 z-40" onClick={onClose}></div>
+      <div className="fixed inset-0 z-[60]" onClick={onClose}></div>
 
-      <div className="absolute top-16 right-0 w-72 bg-white rounded-[30px] shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="absolute top-16 right-0 w-72 bg-white rounded-[30px] shadow-2xl border border-gray-100 z-[70] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* 🟢 Encabezado Sincronizado con Base de Datos */}
         <div className="p-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50/30">
           <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center font-black text-white italic shadow-sm">
