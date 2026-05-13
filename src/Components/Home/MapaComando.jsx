@@ -15,11 +15,15 @@ const createCustomIcon = (color) =>
 
 const MapaComando = ({ onSelectPunto, puntosData = [] }) => {
   return (
-    <div className="h-full w-full rounded-[45px] overflow-hidden border-4 border-white shadow-2xl">
+    <div className="h-full w-full rounded-[45px] overflow-hidden border-4 border-white shadow-2xl relative z-0">
       <MapContainer
         center={POPAYAN_CENTER}
         zoom={15}
         style={{ height: "100%", width: "100%" }}
+        scrollWheelZoom={true}
+        doubleClickZoom={true}
+        touchZoom={true}
+        dragging={true}
       >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
 

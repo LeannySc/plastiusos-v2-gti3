@@ -74,7 +74,7 @@ const NotificationBell = ({ user }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`relative p-2.5 rounded-2xl border transition-all group ${
@@ -97,10 +97,10 @@ const NotificationBell = ({ user }) => {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[60]"
             onClick={() => setIsOpen(false)}
           ></div>
-          <div className="absolute right-0 mt-4 w-80 bg-white rounded-[35px] shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute right-0 mt-4 w-80 bg-white rounded-[35px] shadow-2xl border border-gray-100 z-[70] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-5 bg-[#111827] text-white flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Zap size={14} className="text-amber-400 fill-amber-400" />
