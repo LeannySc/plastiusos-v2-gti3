@@ -1,6 +1,7 @@
 // src/App.jsx
 import { useState } from "react";
 import Navbar from "./Components/Navbar";
+import BottomNav from "./Components/BottomNav";
 import ModuloInicio from "./Components/ModuloInicio";
 import PuntosRecoleccion from "./Components/PuntosRecoleccion";
 import CatalogoPremios from "./Components/CatalogoPremios";
@@ -47,7 +48,7 @@ function App() {
   const tabRealAMostrar = !user && !esRutaPublica ? "inicio" : activeTab;
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] font-sans pb-20 text-slate-900">
+    <div className="min-h-screen bg-[#f9fafb] font-sans md:pb-20 text-slate-900">
       <Navbar
         activeTab={tabRealAMostrar} // Pasamos el tab verificado
         setActiveTab={setActiveTab}
@@ -55,7 +56,14 @@ function App() {
         onLogout={handleLogout}
       />
 
-      <main className="max-w-[1400px] mx-auto p-6 md:p-10">
+      {/* 📱 Bottom Navigation para móviles */}
+      <BottomNav 
+        activeTab={tabRealAMostrar}
+        setActiveTab={setActiveTab}
+        user={user}
+      />
+
+      <main className="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-10 pb-24 md:pb-10">
         {/* --- MODULOS SIEMPRE DISPONIBLES O PÚBLICOS --- */}
         {tabRealAMostrar === "inicio" && <ModuloInicio />}
 
