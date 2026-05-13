@@ -18,13 +18,22 @@ const ModuloInicio = () => {
         const res = await fetch(`${API_BASE_URL}/puntos/todos`);
         const data = await res.json();
 
-        if (isMounted) {
+        if (res.ok && Array.isArray(data)) {
           setPuntos(data);
+        } else {
+          console.error("Respuestas no valida del radae:", data);
+          setPuntos([]);
+        }
+
+        if (isMounted) {
+          // ✅ SEGURIDAD: Solo guardamos si 'data' es realmente una lista
+          setPuntos(Array.isArray(data) ? data : []);
           setLoading(false);
         }
       } catch (error) {
-        console.error("❌ Fallo crítico en el túnel hacia Java:", error);
-        if (isMounted) setLoading(false);
+        console.error("Fallo crítico:", error);
+        setPuntos([]); // Lista vacía para evitar crash
+        setLoading(false);
       }
     };
 
@@ -79,17 +88,17 @@ const ModuloInicio = () => {
               Monitor en Tiempo Real
             </h2>
           </div>
-          <div className="h-[700px] shadow-2xl rounded-[45px] overflow-hidden border-4 border-white">
+          <div className="h-[500px] md:h-[600px] lg:h-[700px] shadow-2xl rounded-[45px] overflow-hidden border-4 border-white relative z-0">
             {/* Enviamos los datos reales capturados de Java */}
             <MapaComando
               onSelectPunto={setPuntoSeleccionado}
-              puntosData={puntos}
+              puntosData={puntos.filter((p) => p.activo === true)}
             />
           </div>
         </div>
 
         {/* Panel lateral con contadores reales */}
-        <div className="w-full lg:w-[28%] pt-20">
+        <div className="w-full lg:w-[28%] pt-0 lg:pt-20">
           <PanelStatus selectedPunto={puntoSeleccionado} listaPuntos={puntos} />
         </div>
       </div>

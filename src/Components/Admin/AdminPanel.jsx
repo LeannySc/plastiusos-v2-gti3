@@ -7,6 +7,7 @@ import AdminTransactionsView from "./AdminViews/AdminTransactionsView";
 import AdminPointsView from "./AdminViews/AdminPointsView";
 import AdminCatalogView from "./AdminViews/AdminCatalogView";
 import AdminUsersView from "./AdminViews/AdminUsersView";
+import AdminInactivePointsView from "./AdminViews/AdminInactivePointsView";
 
 const AdminPanel = () => {
   const [adminTab, setAdminTab] = useState("dashboard");
@@ -25,6 +26,9 @@ const AdminPanel = () => {
         return <AdminUsersView />;
       default:
         return <AdminDashboardView />;
+      // En el renderView switch:
+      case "bodega":
+        return <AdminInactivePointsView />;
     }
   };
 

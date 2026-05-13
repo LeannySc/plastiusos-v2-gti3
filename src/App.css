@@ -1,5 +1,79 @@
 @import "tailwindcss";
 
+/* 🔥 FIX CRÍTICO: Evitar que el mapa se superponga sobre UI */
+.leaflet-container {
+  font-family: inherit !important;
+  z-index: 10 !important; /* ✅ Menor que navbar (z-50 = 50) */
+}
+
+.leaflet-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-control-container {
+  z-index: 1000 !important; /* Controles del mapa siempre visibles */
+}
+
+/* Asegurar que el mapa no溢出 su contenedor */
+.leaflet-map-pane {
+  z-index: 0 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 2 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 3 !important;
+}
+
+/* Popup styles - Premium Style Figma */
+.leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 280px !important;
+}
+
+.leaflet-popup-tip {
+  display: none !important;
+}
+
+.leaflet-container {
+  font-family: inherit !important;
+}
+
+/* 📱 MOBILE FIX: Asegurar que el mapa sea responsive */
+@media (max-width: 768px) {
+  .leaflet-container {
+    min-height: 400px !important;
+    max-height: 100% !important;
+  }
+  
+  .leaflet-control-zoom {
+    transform: scale(0.85);
+    transform-origin: top right;
+  }
+  
+  /* Ajustar controles para móviles */
+  .leaflet-top.leaflet-right {
+    top: 10px !important;
+    right: 10px !important;
+  }
+}
+
+/* Evitar overflow en contenedores del mapa */
+.map-container-wrapper {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+}
+
 @keyframes float {
   0%,
   100% {

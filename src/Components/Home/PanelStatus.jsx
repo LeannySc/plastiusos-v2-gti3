@@ -1,12 +1,19 @@
 import { Leaf, Info } from "lucide-react";
 
 const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
+  // ✅ 1. Filtramos la lista para que el radar solo tome botes que están "en la calle"
+  const puntosActivos = listaPuntos.filter((p) => p.activo === true);
+
   // Lógica de colores unificada (GTI-3 Standard)
   const getStatusDetails = (punto) => {
     if (!punto) return null;
     const nivel = punto.nivelLlenado;
-    if (nivel > 80 || punto.estadoBote === "LLENO") {
-      return { color: "#ef4444", label: "LLENO/INACTIVO" };
+    if (
+      nivel > 80 ||
+      punto.estadoBote === "LLENO" ||
+      punto.estadoBote === "LLENO/CRÍTICO"
+    ) {
+      return { color: "#ef4444", label: "LLENO" }; // ✅ Cambiado: Ya no es inactivo
     }
     if (nivel > 40) {
       return { color: "#f59e0b", label: "MEDIO" };
@@ -15,16 +22,19 @@ const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
   };
 
   const stats = {
-    disponibles: listaPuntos.filter((p) => p.nivelLlenado <= 40).length,
-    medios: listaPuntos.filter(
+    // ✅ 2. Contamos sobre puntosActivos para evitar botes fantasmas
+    disponibles: puntosActivos.filter((p) => p.nivelLlenado <= 40).length,
+    medios: puntosActivos.filter(
       (p) => p.nivelLlenado > 40 && p.nivelLlenado <= 80,
     ).length,
-    llenos: listaPuntos.filter(
-      (p) => p.nivelLlenado > 80 || p.estadoBote === "LLENO",
+    llenos: puntosActivos.filter(
+      (p) =>
+        p.nivelLlenado > 80 ||
+        p.estadoBote === "LLENO" ||
+        p.estadoBote === "LLENO/CRÍTICO",
     ).length,
   };
 
-  // Calculamos el color del punto seleccionado actualmente
   const infoExtra = getStatusDetails(selectedPunto);
 
   return (
@@ -41,11 +51,8 @@ const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
             count={stats.disponibles}
           />
           <StatusItem color="bg-[#f59e0b]" label="Medio" count={stats.medios} />
-          <StatusItem
-            color="bg-[#ef4444]"
-            label="Lleno/Inactivo"
-            count={stats.llenos}
-          />
+          {/* ✅ 3. Nombre corregido: Solo "Lleno" */}
+          <StatusItem color="bg-[#ef4444]" label="Lleno" count={stats.llenos} />
         </ul>
       </div>
 
@@ -53,12 +60,13 @@ const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
         <div className="bg-emerald-500 p-2.5 rounded-2xl shadow-lg shadow-emerald-500/20 text-white">
           <Leaf size={18} fill="currentColor" />
         </div>
+        {/* ✅ 4. Contador corregido en el texto descriptivo */}
         <p className="text-[#065f46] text-sm font-bold leading-snug italic py-1">
-          {listaPuntos.length} nodos activos sincronizados con Popayán.
+          {puntosActivos.length} nodos activos sincronizados con Popayán.
         </p>
       </div>
 
-      {/* 3. DETALLE DINÁMICO (Corrección de variables de Backend) */}
+      {/* 3. DETALLE DINÁMICO */}
       {selectedPunto && (
         <div className="bg-white p-6 rounded-[35px] border-2 border-emerald-500/10 shadow-lg animate-in fade-in zoom-in duration-500">
           <div className="flex items-center gap-2 mb-1 text-emerald-500">
@@ -67,12 +75,10 @@ const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
               Telemetría
             </h4>
           </div>
-
-          <p className="font-bold text-gray-800 text-xl tracking-tight leading-tight mb-2">
+          <p className="font-bold text-gray-800 text-xl tracking-tight mb-2">
             {selectedPunto.nombre}
           </p>
-
-          <div className="flex items-center gap-2 bg-gray-50 self-start px-3 py-1 rounded-full border border-gray-100 mb-4 inline-flex">
+          <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 mb-4 inline-flex">
             <span
               className="h-2 w-2 rounded-full animate-pulse"
               style={{ backgroundColor: infoExtra.color }}
@@ -84,7 +90,6 @@ const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
               {infoExtra.label}
             </span>
           </div>
-
           <div className="mt-4 p-5 bg-[#ecfdf5] rounded-[28px] border border-emerald-500/10">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[11px] font-black text-emerald-800 uppercase italic">
@@ -96,7 +101,7 @@ const PanelStatus = ({ selectedPunto, listaPuntos = [] }) => {
             </div>
             <div className="w-full bg-emerald-200/50 h-3 rounded-full overflow-hidden shadow-inner">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out"
                 style={{ width: `${selectedPunto.nivelLlenado}%` }}
               ></div>
             </div>

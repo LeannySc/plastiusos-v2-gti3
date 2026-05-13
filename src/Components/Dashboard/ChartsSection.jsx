@@ -1,6 +1,6 @@
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,40 +11,34 @@ import {
   Cell,
 } from "recharts";
 
-const dataMensual = [
-  { name: "Oct", kg: 3200 },
-  { name: "Nov", kg: 3800 },
-  { name: "Dic", kg: 2800 },
-  { name: "Ene", kg: 3400 },
-  { name: "Feb", kg: 4500 },
-  { name: "Mar", kg: 4000 },
-];
+// 🌈 Paleta de colores industrial GTI-3
+const COLORES_GTI = ["#10b981", "#3b82f6", "#f59e0b", "#a855f7", "#ef4444"];
 
-const dataMateriales = [
-  { name: "Plástico PET", value: 38, color: "#3b82f6" },
-  { name: "Cartón", value: 25, color: "#f59e0b" },
-  { name: "Vidrio", value: 15, color: "#10b981" },
-  { name: "Metal", value: 12, color: "#64748b" },
-  { name: "Papel", value: 7, color: "#eab308" },
-  { name: "Electrónicos", value: 3, color: "#a855f7" },
-];
+const ChartsSection = ({ data }) => {
+  // 🛡️ Seguridad GTI: Verificación de data
+  if (!data || !data.historicoMensual || !data.distribucionMateriales) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-3 bg-white p-20 rounded-[45px] text-center text-gray-300 font-black italic uppercase border-2 border-dashed border-gray-100">
+          Sincronizando flujo de materiales...
+        </div>
+      </div>
+    );
+  }
 
-const ChartsSection = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Gráfica de Líneas (70%) */}
-      <div className="lg:col-span-2 bg-white p-8 rounded-[45px] border border-gray-100 shadow-sm">
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xl font-bold text-gray-900 italic tracking-tight">
-            Kg Reciclados por Mes
-          </h3>
-          <span className="text-emerald-500 text-xs font-black italic">
-            ↗ +18% vs mes anterior
-          </span>
-        </div>
-        <div className="h-[300px]">
+      {/* 📊 1. GRÁFICA DE BARRAS (Kg por día) */}
+      <div
+        className="lg:col-span-2 bg-white p-8 rounded-[45px] border border-gray-100 shadow-sm"
+        style={{ minHeight: "450px" }}
+      >
+        <h3 className="text-xl font-bold text-gray-900 italic tracking-tight mb-8 uppercase">
+          Kg Recuperados por Día
+        </h3>
+        <div style={{ width: "100%", height: "300px" }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dataMensual}>
+            <BarChart data={data.historicoMensual}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
@@ -54,72 +48,96 @@ const ChartsSection = () => {
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12, fontWeight: 600 }}
+                tick={{ fontSize: 10, fontWeight: "bold", fill: "#94a3b8" }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 10, fontWeight: "bold", fill: "#94a3b8" }}
               />
               <Tooltip
+                cursor={{ fill: "#f8fafc" }}
                 contentStyle={{
                   borderRadius: "20px",
                   border: "none",
-                  boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                  boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
                 }}
               />
-              <Line
-                type="monotone"
+              <Bar
                 dataKey="kg"
-                stroke="#10b981"
-                strokeWidth={4}
-                dot={{ r: 6, fill: "#10b981" }}
-                activeDot={{ r: 8 }}
+                fill="#10b981"
+                radius={[10, 10, 0, 0]}
+                barSize={40}
               />
-            </LineChart>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Gráfica de Dona (30%) */}
-      <div className="bg-white p-8 rounded-[45px] border border-gray-100 shadow-sm">
-        <h3 className="text-xl font-bold text-gray-900 italic tracking-tight mb-8">
-          Distribución de Materiales
+      {/* 🍩 2. GRÁFICA DE DONA (Mix de Materiales Real) */}
+      <div className="bg-white p-8 rounded-[45px] border border-gray-100 shadow-sm flex flex-col h-full">
+        <h3 className="text-xl font-bold text-gray-900 italic tracking-tight mb-8 uppercase text-center">
+          Mix de Materiales
         </h3>
-        <div className="h-[250px] relative">
+
+        <div style={{ width: "100%", height: "220px" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={dataMateriales}
+                data={data.distribucionMateriales}
                 innerRadius={60}
                 outerRadius={80}
-                paddingAngle={5}
+                paddingAngle={8}
                 dataKey="value"
+                animationBegin={0}
+                animationDuration={1500}
               >
-                {dataMateriales.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {data.distribucionMateriales.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORES_GTI[index % COLORES_GTI.length]}
+                    stroke="none"
+                  />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "15px",
+                  border: "none",
+                  boxShadow: "0 10px 15px rgba(0,0,0,0.1)",
+                }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="mt-4 space-y-2">
-          {dataMateriales.map((mat, i) => (
-            <div
-              key={i}
-              className="flex justify-between items-center text-[10px] font-bold"
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: mat.color }}
-                />{" "}
-                {mat.name}
+
+        {/* LEYENDAS DINÁMICAS */}
+        <div className="mt-6 space-y-3">
+          {data.distribucionMateriales.length > 0 ? (
+            data.distribucionMateriales.map((mat, i) => (
+              <div
+                key={i}
+                className="flex justify-between items-center text-[10px] font-black uppercase italic"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{
+                      backgroundColor: COLORES_GTI[i % COLORES_GTI.length],
+                    }}
+                  />
+                  <span className="text-gray-500 tracking-tighter">
+                    {mat.name}
+                  </span>
+                </div>
+                <span className="text-emerald-600">{mat.value} kg</span>
               </div>
-              <span>{mat.value}%</span>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-center text-[10px] text-gray-300 font-bold uppercase italic mt-10">
+              Sin datos de clasificación
+            </p>
+          )}
         </div>
       </div>
     </div>

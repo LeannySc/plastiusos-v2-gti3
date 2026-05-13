@@ -3,8 +3,9 @@ import { Search, Star, Loader2 } from "lucide-react";
 import CanjeModal from "./Catalog/CanjeModal";
 import SuccessModal from "./Catalog/SuccessModal";
 import { API_BASE_URL } from "../api/config"; // Importante para local:8080
+import { toast } from "sonner";
 
-const CatalogoPremios = () => {
+const CatalogoPremios = ({ user, setUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("Todas");
@@ -12,8 +13,8 @@ const CatalogoPremios = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState("");
-
   // 🔥 1. Cargar productos desde tu PostgreSQL (ProductoRepository)
+
   useEffect(() => {
     fetch(`${API_BASE_URL}/canje/catalogo`)
       .then((res) => res.json())
@@ -22,45 +23,57 @@ const CatalogoPremios = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error cargando catálogo local:", err);
+        console.error("Fallo de red en catálogo:", err);
         setLoading(false);
       });
   }, []);
 
-  // 🔥 2. Lógica de Canje Real vinculada a CanjeController.java
   const handleConfirmCanje = async (producto) => {
     try {
-      // Usamos el ID de usuario 1 por ahora (Simulando login de Maria García)
-      const userId = 1;
       const res = await fetch(
-        `${API_BASE_URL}/canje/realizar?userId=${userId}&productoId=${producto.id}&direccion=Sede Principal Popayán`,
+        `${API_BASE_URL}/canje/realizar?userId=${user.id}&productoId=${producto.id}&direccion=Sede Principal Popayán`,
         { method: "POST" },
       );
 
       if (res.ok) {
-        setSelectedProduct(null);
+        const canjeRealizado = await res.json();
+        console.log("🚀 Canje GTI Exitoso:", canjeRealizado);
+
+        // ✅ CORRECCIÓN TÉCNICA: Sacamos los puntos del producto del objeto devuelto por Java
+        const puntosGastados = canjeRealizado.producto.costoPuntos;
+        const saldoAnterior = user.billetera?.saldoPuntos || 0;
+        const nuevoSaldo = saldoAnterior - puntosGastados;
+
+        // ✅ ACTUALIZACIÓN ATÓMICA: Esto actualiza el Navbar, el Dashboard y el LocalStorage
+        setUsuario({
+          ...user,
+          billetera: { ...user.billetera, saldoPuntos: nuevoSaldo },
+        });
+
         setSuccessName(producto.nombre);
+        setSelectedProduct(null);
         setShowSuccess(true);
 
-        // Refrescamos productos para ver el nuevo stock (singleton stock gestionado en Java)
+        // Refresco de stock físico
         const refreshRes = await fetch(`${API_BASE_URL}/canje/catalogo`);
         const refreshData = await refreshRes.json();
         setProductos(refreshData);
       } else {
         const errorData = await res.json();
-        alert(`Fallo de protocolo: ${errorData.message}`);
+        toast.error(`Error GTI: ${errorData.message}`);
       }
     } catch (err) {
-      console.error("Fallo crítico en canje:", err);
+      console.error("Fallo de red en bóveda:", err);
+      toast.error("Servidor fuera de línea");
     }
   };
 
   // 🔥 3. Filtrado reactivo
 
   const productosFiltrados = productos.filter((p) => {
-    const coincideBusqueda = p.nombre
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const coincideBusqueda =
+      p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
     // Comprobamos la categoría (Si tu Java aún no tiene categoría, por ahora asume que todos coinciden)
     const coincideCategoria =
       activeCategory === "Todas" || p.categoria === activeCategory;
@@ -76,24 +89,22 @@ const CatalogoPremios = () => {
     );
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 pb-20">
-      {/* HEADER */}
+    <div className="space-y-10">
+      {/* 🟢 HEADER DINÁMICO */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">
             Catálogo de Premios
           </h1>
-          <p className="text-gray-400 mt-2 font-medium italic">
-            Artículos sincronizados desde la base de datos industrial GTI-3.
-          </p>
         </div>
-        <div className="bg-emerald-50 px-6 py-3 rounded-[25px] border border-emerald-100 flex items-center gap-4 shadow-sm">
+        <div className="bg-emerald-50 px-6 py-3 rounded-[25px] border border-emerald-100 flex items-center gap-4">
           <Star className="text-emerald-500 fill-current" size={20} />
           <span className="text-emerald-600 font-black italic text-lg leading-none">
-            1.240{" "}
-            <span className="text-xs uppercase font-medium">
-              pts disponibles
-            </span>
+            {/* ✅ ARREGLO: Cambiamos 1240 por los puntos REALES de la DB */}
+            {user.rol === "RECICLADOR"
+              ? user.billetera?.saldoPuntos || 0
+              : "0"}{" "}
+            pts disponibles
           </span>
         </div>
       </div>
@@ -190,7 +201,7 @@ const CatalogoPremios = () => {
       <CanjeModal
         isOpen={!!selectedProduct}
         product={selectedProduct}
-        userPoints={1240} // Esto luego vendrá del AuthContext real
+        userPoints={user.rol === "RECICLADOR" ? user.billetera?.saldoPuntos : 0}
         onClose={() => setSelectedProduct(null)}
         onConfirm={handleConfirmCanje}
       />

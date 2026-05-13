@@ -24,26 +24,38 @@ const PuntosRecoleccion = () => {
 
   // 🔥 EFECTO 1: Carga inicial desde Java
   useEffect(() => {
-    fetch(`${API_BASE_URL}/puntos/todos`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPuntos(data);
-        setLoading(false);
-      })
-      .catch((err) => {
+    const fetchPuntos = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/puntos/todos`);
+        const data = await res.json();
+
+        if (res.ok && Array.isArray(data)) {
+          setPuntos(data);
+        } else {
+          setPuntos([]); // 🛡️ evita que explote el filter
+          console.error("Fallo de telemetría:", data);
+        }
+      } catch (err) {
         console.error("Fallo al conectar con PuntoController:", err);
+        setPuntos([]); // también protegemos aquí
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchPuntos();
   }, []);
 
-  // 🔥 LÓGICA DE FILTRADO MULTI-CRITERIO
+  // 🔥 LÓGICA DE FILTRADO MULTI-CRITERIO MEJORADA
   const puntosFiltrados = puntos.filter((punto) => {
     const matchesSearch =
       punto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       punto.direccion.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // ✅ Si 'soloActivos' es true, ocultamos los que son false.
+    // ✅ Si 'soloActivos' es false, mostramos absolutamente TODO.
     const matchesStatus = soloActivos ? punto.activo === true : true;
 
-    // Filtrar por materiales (dentro de la lista que trae Java)
     const matchesMaterial =
       filtroMaterial === "Todos los materiales" ||
       punto.materiales?.some((m) => m.nombre === filtroMaterial);

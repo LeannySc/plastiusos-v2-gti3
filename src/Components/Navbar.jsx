@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import UserDropdown from "./Profile/UserDropdown";
+import NotificationBell from "./Profile/NotificationBell";
 
 const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -24,7 +25,7 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4">
+    <nav className="sticky top-0 z-[50] w-full bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4">
       <div className="max-w-[1400px] mx-auto flex items-center justify-between">
         <div
           onClick={() => setActiveTab("inicio")}
@@ -33,11 +34,100 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
           <div className="bg-[#10b981] p-1.5 rounded-lg group-hover:scale-110 transition-transform shadow-lg shadow-emerald-100">
             <Leaf className="text-white" size={20} fill="currentColor" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-[#064e3b]">
+          <span className="text-lg md:text-xl font-bold tracking-tight text-[#064e3b]">
             EcoRecicla
           </span>
         </div>
 
+        {/* 📱 MENU MOBILE - Visible solo en pantallas pequeñas */}
+        <div className="md:hidden relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-gray-600"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+          
+          {/* Menú desplegable móvil */}
+          {isDropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-[45]"
+                onClick={() => setIsDropdownOpen(false)}
+              ></div>
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[50] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-2 space-y-1">
+                  <MobileNavItem
+                    icon={Home}
+                    label="Inicio"
+                    active={activeTab === "inicio"}
+                    onClick={() => {
+                      setActiveTab("inicio");
+                      setIsDropdownOpen(false);
+                    }}
+                  />
+                  <MobileNavItem
+                    icon={LayoutDashboard}
+                    label="Dashboard"
+                    active={activeTab === "dashboard"}
+                    isLocked={!user}
+                    onClick={() => {
+                      setActiveTab("dashboard");
+                      setIsDropdownOpen(false);
+                    }}
+                  />
+                  <MobileNavItem
+                    icon={MapPin}
+                    label="Puntos"
+                    active={activeTab === "puntos"}
+                    isLocked={!user}
+                    onClick={() => {
+                      setActiveTab("puntos");
+                      setIsDropdownOpen(false);
+                    }}
+                  />
+                  <MobileNavItem
+                    icon={History}
+                    label="Historial"
+                    active={activeTab === "historial"}
+                    isLocked={!user}
+                    onClick={() => {
+                      setActiveTab("historial");
+                      setIsDropdownOpen(false);
+                    }}
+                  />
+                  {user?.rol !== "ENCARGADO" && (
+                    <MobileNavItem
+                      icon={ShoppingBag}
+                      label="Catálogo"
+                      active={activeTab === "catalogo"}
+                      isLocked={!user}
+                      onClick={() => {
+                        setActiveTab("catalogo");
+                        setIsDropdownOpen(false);
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-1 bg-gray-50/50 p-1 rounded-2xl">
           <NavItem
             icon={Home}
@@ -60,29 +150,40 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
             onClick={() => setActiveTab("puntos")}
           />
           <NavItem
-            icon={ShoppingBag}
-            label="Catálogo"
-            active={activeTab === "catalogo"}
-            isLocked={!user}
-            onClick={() => setActiveTab("catalogo")}
-          />
-          <NavItem
             icon={History}
             label="Historial"
             active={activeTab === "historial"}
             isLocked={!user}
             onClick={() => setActiveTab("historial")}
-          />
+          />{" "}
+          {user?.rol !== "ENCARGADO" && (
+            <NavItem
+              icon={ShoppingBag}
+              label="Catálogo"
+              active={activeTab === "catalogo"}
+              isLocked={!user}
+              onClick={() => setActiveTab("catalogo")}
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-3">
           {user && (
-            <div className="bg-[#ecfdf5] border border-[#10b981]/20 px-3 py-1.5 rounded-full flex items-center gap-2">
-              <Star size={16} className="text-[#10b981] fill-current" />
-              <span className="text-[#065f46] font-bold text-sm">
-                {user.saldoPuntos || 0} pts
-              </span>
-            </div>
+            <>
+              {/* 🔔 CAMPANITA (NO afecta estilos existentes) */}
+              <NotificationBell user={user} />
+
+              {/* ⭐ TU BLOQUE ORIGINAL (solo lógica cambiada) */}
+              <div className="bg-[#ecfdf5] border border-[#10b981]/20 px-3 py-1.5 rounded-full flex items-center gap-2">
+                <Star size={16} className="text-[#10b981] fill-current" />
+                <span className="text-[#065f46] font-bold text-sm">
+                  {user.rol === "RECICLADOR"
+                    ? user.billetera?.saldoPuntos || 0
+                    : 0}{" "}
+                  pts
+                </span>
+              </div>
+            </>
           )}
 
           <div className="relative">
@@ -122,7 +223,7 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   );
 };
 
-// 🛡️ Componente Interno Limpio para NavItem
+// 🛡️ Componente Interno Limpio para NavItem (Desktop)
 const NavItem = ({ icon: Icon, label, active, onClick, isLocked }) => (
   <button
     onClick={!isLocked ? onClick : null}
@@ -134,6 +235,26 @@ const NavItem = ({ icon: Icon, label, active, onClick, isLocked }) => (
       <Icon size={18} />
       {isLocked && (
         <div className="absolute -top-1 -right-1 bg-amber-400 p-0.5 rounded-full border border-white animate-bounce">
+          <Lock size={6} className="text-white fill-white" />
+        </div>
+      )}
+    </div>
+    {label}
+  </button>
+);
+
+// 📱 Componente para Mobile NavItem (más compacto)
+const MobileNavItem = ({ icon: Icon, label, active, onClick, isLocked }) => (
+  <button
+    onClick={!isLocked ? onClick : null}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all relative
+    ${isLocked ? "opacity-40 grayscale cursor-not-allowed" : "cursor-pointer"}
+    ${active ? "bg-emerald-50 text-[#10b981]" : "text-gray-600 hover:bg-gray-50"}`}
+  >
+    <div className="relative">
+      <Icon size={18} />
+      {isLocked && (
+        <div className="absolute -top-1 -right-1 bg-amber-400 p-0.5 rounded-full border border-white">
           <Lock size={6} className="text-white fill-white" />
         </div>
       )}
