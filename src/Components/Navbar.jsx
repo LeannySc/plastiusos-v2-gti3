@@ -25,7 +25,7 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   };
 
   return (
-    <nav className="sticky top-0 z-[50] w-full bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-4">
+    <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-6 py-3 md:py-4">
       <div className="max-w-[1400px] mx-auto flex items-center justify-between">
         <div
           onClick={() => setActiveTab("inicio")}
@@ -39,95 +39,7 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
           </span>
         </div>
 
-        {/* 📱 MENU MOBILE - Visible solo en pantallas pequeñas */}
-        <div className="md:hidden relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-gray-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-          
-          {/* Menú desplegable móvil */}
-          {isDropdownOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-[45]"
-                onClick={() => setIsDropdownOpen(false)}
-              ></div>
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[50] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="p-2 space-y-1">
-                  <MobileNavItem
-                    icon={Home}
-                    label="Inicio"
-                    active={activeTab === "inicio"}
-                    onClick={() => {
-                      setActiveTab("inicio");
-                      setIsDropdownOpen(false);
-                    }}
-                  />
-                  <MobileNavItem
-                    icon={LayoutDashboard}
-                    label="Dashboard"
-                    active={activeTab === "dashboard"}
-                    isLocked={!user}
-                    onClick={() => {
-                      setActiveTab("dashboard");
-                      setIsDropdownOpen(false);
-                    }}
-                  />
-                  <MobileNavItem
-                    icon={MapPin}
-                    label="Puntos"
-                    active={activeTab === "puntos"}
-                    isLocked={!user}
-                    onClick={() => {
-                      setActiveTab("puntos");
-                      setIsDropdownOpen(false);
-                    }}
-                  />
-                  <MobileNavItem
-                    icon={History}
-                    label="Historial"
-                    active={activeTab === "historial"}
-                    isLocked={!user}
-                    onClick={() => {
-                      setActiveTab("historial");
-                      setIsDropdownOpen(false);
-                    }}
-                  />
-                  {user?.rol !== "ENCARGADO" && (
-                    <MobileNavItem
-                      icon={ShoppingBag}
-                      label="Catálogo"
-                      active={activeTab === "catalogo"}
-                      isLocked={!user}
-                      onClick={() => {
-                        setActiveTab("catalogo");
-                        setIsDropdownOpen(false);
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Desktop Menu */}
+        {/* Desktop Navigation - Oculto en móviles */}
         <div className="hidden md:flex items-center gap-1 bg-gray-50/50 p-1 rounded-2xl">
           <NavItem
             icon={Home}
@@ -167,16 +79,18 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {user && (
             <>
-              {/* 🔔 CAMPANITA (NO afecta estilos existentes) */}
-              <NotificationBell user={user} />
+              {/* 🔔 CAMPANITA - Oculta en móviles muy pequeños */}
+              <div className="hidden sm:block">
+                <NotificationBell user={user} />
+              </div>
 
-              {/* ⭐ TU BLOQUE ORIGINAL (solo lógica cambiada) */}
-              <div className="bg-[#ecfdf5] border border-[#10b981]/20 px-3 py-1.5 rounded-full flex items-center gap-2">
-                <Star size={16} className="text-[#10b981] fill-current" />
-                <span className="text-[#065f46] font-bold text-sm">
+              {/* ⭐ Puntos - Versión compacta para móvil */}
+              <div className="bg-[#ecfdf5] border border-[#10b981]/20 px-2 md:px-3 py-1 rounded-full flex items-center gap-1.5">
+                <Star size={14} className="text-[#10b981] fill-current" />
+                <span className="text-[#065f46] font-bold text-xs md:text-sm">
                   {user.rol === "RECICLADOR"
                     ? user.billetera?.saldoPuntos || 0
                     : 0}{" "}
@@ -190,14 +104,14 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
             {user ? (
               <div
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 pl-2 border-l border-gray-100 ml-1 cursor-pointer"
+                className="flex items-center gap-1.5 md:gap-2 pl-1.5 md:pl-2 border-l border-gray-100 ml-0.5 md:ml-1 cursor-pointer"
               >
-                <div className="w-9 h-9 bg-[#10b981] text-white rounded-full flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 md:w-9 md:h-9 bg-[#10b981] text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm">
                   {getInitials(user.nombre)}
                 </div>
                 <ChevronDown
-                  size={16}
-                  className={`text-gray-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                  size={14}
+                  className={`text-gray-400 transition-transform hidden md:block ${isDropdownOpen ? "rotate-180" : ""}`}
                 />
                 <UserDropdown
                   isOpen={isDropdownOpen}
@@ -210,8 +124,8 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
               </div>
             ) : (
               <button
-                onClick={() => setActiveTab("registro")} // 🚀 Esta orden activa la página
-                className="bg-emerald-500 text-white px-8 py-2.5 rounded-xl font-black italic uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-100 hover:bg-[#059669] hover:-translate-y-0.5 active:scale-95 transition-all"
+                onClick={() => setActiveTab("registro")}
+                className="bg-emerald-500 text-white px-4 md:px-8 py-2 md:py-2.5 rounded-xl font-black italic uppercase text-[9px] md:text-[10px] tracking-widest shadow-lg shadow-emerald-100 hover:bg-[#059669] hover:-translate-y-0.5 active:scale-95 transition-all"
               >
                 Registrarse
               </button>
