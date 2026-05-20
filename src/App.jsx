@@ -29,8 +29,32 @@ function App() {
     localStorage.setItem("gti_user", JSON.stringify(usuarioReal));
     setActiveTab("inicio");
   };
+  const handleUpdateUserPoints = (updatedPoints) => {
+    if (user && user.rol === "RECICLADOR") {
+      const newUserState = {
+        ...user,
+
+        // protege si billetera aún no existe
+        billetera: {
+          ...(user.billetera || {}),
+          saldoPuntos: updatedPoints,
+        },
+      };
+
+      setUser(newUserState);
+
+      localStorage.setItem("gti_user", JSON.stringify(newUserState));
+    }
+  };
   const updateBalanceSilently = (usuarioActualizado) => {
+    if (usuarioActualizado?.billetera?.saldoPuntos !== undefined) {
+      handleUpdateUserPoints(usuarioActualizado.billetera.saldoPuntos);
+
+      return;
+    }
+
     setUser(usuarioActualizado);
+
     localStorage.setItem("gti_user", JSON.stringify(usuarioActualizado));
   };
   const handleStartNavigation = (punto) => {
@@ -97,7 +121,11 @@ function App() {
 
             {/* Blindaje por rol */}
             {tabRealAMostrar === "catalogo" && user.rol !== "ENCARGADO" && (
-              <CatalogoPremios user={user} setUsuario={updateBalanceSilently} />
+              <CatalogoPremios
+                user={user}
+                setUsuario={updateBalanceSilently}
+                onPointsUpdate={handleUpdateUserPoints}
+              />
             )}
 
             {tabRealAMostrar === "historial" && (

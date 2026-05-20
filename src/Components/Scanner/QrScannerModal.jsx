@@ -3,38 +3,59 @@ import { X, ShieldCheck, Zap, Info } from "lucide-react";
 import { API_BASE_URL } from "../../api/config";
 import { toast } from "sonner";
 
-const QrScannerModal = ({ isOpen, onClose, user }) => {
+const QrScannerModal = ({ isOpen, onClose, user, onPointsUpdate }) => {
   if (!isOpen) return null;
 
   const handleScan = async (result) => {
-    if (result && result.length > 0) {
-      const raw = result[0].rawValue;
-      // 🕵️ Manejo inteligente: acepta "GTI_NODE_ID:5" o simplemente "5"
-      const puntoId = raw.includes(":") ? raw.split(":")[1] : raw;
+    if (!result || result.length === 0) return;
 
-      onClose();
+    const raw = result[0].rawValue;
 
-      toast.promise(
-        fetch(
-          `${API_BASE_URL}/iot/escaneo-qr?userId=${user.id}&puntoId=${puntoId}`,
-          {
-            method: "POST",
-            headers: { "ngrok-skip-browser-warning": "true" },
-          },
-        ),
+    // acepta GTI_NODE_ID:5 o solo 5
+    const puntoId = raw.includes(":") ? raw.split(":")[1] : raw;
+
+    onClose();
+
+    toast.promise(
+      fetch(
+        `${API_BASE_URL}/iot/escaneo-qr?userId=${user.id}&puntoId=${puntoId}`,
         {
-          loading: "Sincronizando con el Satélite GTI-3...",
-          success: (res) => {
-            if (res.status === 200)
-              return "🚀 Identidad Vinculada. Procede al pesaje.";
-            if (res.status === 409)
-              return "⚠️ Nodo ocupado por otro ciudadano.";
-            return "❌ Nodo fuera de línea (Técnico)";
+          method: "POST",
+          headers: {
+            "ngrok-skip-browser-warning": "true",
           },
-          error: "Fallo crítico en el enlace de red.",
         },
-      );
-    }
+      ).then(async (res) => {
+        const texto = await res.text();
+
+        if (!res.ok) {
+          throw new Error(texto || "Error de conexión");
+        }
+
+        return texto;
+      }),
+
+      {
+        loading: "Sincronizando con el Satélite GTI-3...",
+
+        success: (mensaje) => {
+          // Si más adelante backend manda puntos:
+          if (onPointsUpdate && user?.billetera?.saldoPuntos) {
+            onPointsUpdate(user.billetera.saldoPuntos);
+          }
+
+          return mensaje || "🚀 Identidad Vinculada. Procede al pesaje.";
+        },
+
+        error: (err) => {
+          if (err.message.includes("ocupado")) {
+            return "⚠️ Nodo ocupado por otro ciudadano.";
+          }
+
+          return `❌ ${err.message}`;
+        },
+      },
+    );
   };
 
   return (
