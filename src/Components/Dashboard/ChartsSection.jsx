@@ -37,7 +37,7 @@ const ChartsSection = ({ data }) => {
           Kg Recuperados por Día
         </h3>
         <div style={{ width: "100%", height: "300px" }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={data.historicoMensual}>
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -81,7 +81,7 @@ const ChartsSection = ({ data }) => {
         </h3>
 
         <div style={{ width: "100%", height: "220px" }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <PieChart>
               <Pie
                 data={data.distribucionMateriales}

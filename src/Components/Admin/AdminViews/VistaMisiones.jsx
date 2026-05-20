@@ -32,22 +32,37 @@ const VistaMisiones = ({ user }) => {
   useEffect(() => {
     let isMounted = true;
 
-    const iniciarCarga = async () => {
-      // Pequeño delay de microtask para que React termine su ciclo de montado
-      // Esto elimina el error de "setState synchronously"
-      await Promise.resolve();
-      if (isMounted) {
-        cargarMisionesCercanas();
+    const inicializarSeguimiento = async () => {
+      setLoading(true);
+      try {
+        // 🛰️ PROTOCOLO RECOOPERACIÓN: ¿Hay algo pendiente en la DB?
+        const resMision = await fetch(
+          `${API_BASE_URL}/logistica/mision-actual?encargadoId=${user.id}`,
+        );
+
+        if (resMision.status === 200 && isMounted) {
+          const data = await resMision.json();
+          setMisionActiva(data); // Re-anclamos la UI a la misión de la DB
+          toast.success("Retomando seguimiento satelital...");
+        } else if (isMounted) {
+          // Si no hay misión, cargamos el radar normal
+          await cargarMisionesCercanas(true);
+        }
+      } catch (err) {
+        console.error("Fallo de sincronización:", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
     if (!inicializado.current) {
-      iniciarCarga();
+      inicializarSeguimiento();
       inicializado.current = true;
     }
 
+    // Intervalo de radar (Solo si NO hay misión activa)
     const interval = setInterval(() => {
-      if (isMounted && !misionActiva) {
+      if (!misionActiva && isMounted) {
         cargarMisionesCercanas(true);
       }
     }, 15000);
@@ -56,7 +71,7 @@ const VistaMisiones = ({ user }) => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [cargarMisionesCercanas, misionActiva]);
+  }, [user.id, misionActiva, cargarMisionesCercanas]);
 
   // --- Lógica de botones (aceptar/finalizar) igual que antes ---
   const aceptarMision = async (punto) => {

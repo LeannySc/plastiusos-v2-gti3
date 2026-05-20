@@ -11,8 +11,10 @@ import {
   Layers,
 } from "lucide-react";
 import { API_BASE_URL } from "../api/config";
+import QRCodeLib from "react-qr-code";
+const QRCode = QRCodeLib.default || QRCodeLib;
 
-const PuntosRecoleccion = () => {
+const PuntosRecoleccion = ({ onNavigate }) => {
   const [puntos, setPuntos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
@@ -178,6 +180,7 @@ const PuntosRecoleccion = () => {
           <PuntoCard
             key={punto.id}
             punto={punto}
+            onNavigate={onNavigate}
             isSelected={selectedId === punto.id}
             onSelect={() =>
               setSelectedId(selectedId === punto.id ? null : punto.id)
@@ -202,7 +205,8 @@ const StatCard = ({ value, label, color }) => (
   </div>
 );
 
-const PuntoCard = ({ punto, isSelected, onSelect }) => {
+const PuntoCard = ({ punto, isSelected, onSelect, onNavigate }) => {
+  const [showQrZoom, setShowQrZoom] = useState(false);
   return (
     <div
       onClick={onSelect}
@@ -261,27 +265,95 @@ const PuntoCard = ({ punto, isSelected, onSelect }) => {
       <div
         className={`space-y-4 overflow-hidden transition-all duration-700 ${isSelected ? "max-h-[300px] opacity-100 pt-6 mt-6 border-t" : "max-h-0 opacity-0"}`}
       >
-        <div className="bg-emerald-50/80 flex items-center gap-3 px-5 py-4 rounded-[24px] border border-emerald-100">
+        {/* 🔥 ZONA INTERACTIVA DEL QR */}
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowQrZoom(true);
+          }}
+          className="bg-emerald-50/80 flex items-center gap-3 px-5 py-4 rounded-[24px] border border-emerald-100 hover:bg-emerald-100 transition-all cursor-zoom-in"
+        >
           <QrCode size={20} className="text-emerald-500" />
+
           <div>
             <span className="text-[10px] font-black text-emerald-800 italic uppercase block leading-none">
-              Código QR de Escaneo
+              Identidad Nodo #{punto.id}
             </span>
+
             <span className="text-[9px] text-emerald-600/70 font-bold uppercase tracking-widest">
-              {punto.codigoQR || "GTI-LOCAL-TOKEN"}
+              Generar para impresión
             </span>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <button className="flex items-center justify-center gap-2 bg-emerald-500 text-white py-4 rounded-[22px] font-black italic uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all">
-            <Navigation2 size={16} /> Cómo llegar
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+
+              onNavigate(punto);
+            }}
+            className="
+flex
+items-center
+justify-center
+gap-2
+bg-emerald-500
+text-white
+py-4
+rounded-[22px]
+font-black
+italic
+uppercase
+text-[10px]
+tracking-widest
+shadow-lg
+shadow-emerald-200
+hover:bg-emerald-600
+transition-all
+active:scale-95
+"
+          >
+            <Navigation2 size={16} />
+            Cómo llegar
           </button>
           <button className="flex items-center justify-center gap-2 bg-gray-100 text-gray-800 py-4 rounded-[22px] font-black italic uppercase text-[10px] tracking-widest hover:bg-gray-200">
             <Phone size={16} /> Llamar
           </button>
         </div>
       </div>
+      {/* 🔍 MODAL DE ZOOM */}
+      {showQrZoom && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+            onClick={() => setShowQrZoom(false)}
+          ></div>
+
+          <div className="relative bg-white p-12 rounded-[50px] shadow-2xl text-center space-y-6 max-w-sm w-full">
+            <h3 className="text-xl font-black italic uppercase text-gray-800">
+              Bote #{punto.id}: {punto.nombre}
+            </h3>
+
+            <div className="bg-white p-6 rounded-3xl inline-block border-4 border-emerald-500 shadow-inner">
+              <QRCode value={`GTI_NODE_ID:${punto.id}`} size={220} level="H" />
+            </div>
+
+            <p className="text-[10px] text-gray-400 font-bold uppercase italic leading-snug">
+              Imprimir y pegar este código
+              <br />
+              en el frontal del Nodo Inteligente.
+            </p>
+
+            <button
+              onClick={() => setShowQrZoom(false)}
+              className="w-full py-4 bg-emerald-500 text-white rounded-3xl font-black uppercase text-xs"
+            >
+              Finalizar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

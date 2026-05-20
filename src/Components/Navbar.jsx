@@ -8,13 +8,16 @@ import {
   ChevronDown,
   Star,
   Lock,
+  Camera,
 } from "lucide-react";
 import { useState } from "react";
 import UserDropdown from "./Profile/UserDropdown";
 import NotificationBell from "./Profile/NotificationBell";
+import QrScannerModal from "./Scanner/QrScannerModal";
 
 const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // 🔥 PROTOCOLO GTI-INITIALS: Extrae 1ra letra de nombre y 1ra de apellido
   const getInitials = (fullName) => {
@@ -81,6 +84,17 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
         <div className="flex items-center gap-3">
           {user && (
             <>
+              {/* 🚀 BOTÓN SCANNER */}
+              <button
+                onClick={() => setIsScannerOpen(true)}
+                className="relative p-2.5 rounded-2xl bg-gray-50 border border-gray-100 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all group shadow-sm active:scale-90"
+                title="Abrir Cámara de Escaneo"
+              >
+                <Camera
+                  size={20}
+                  className="group-hover:rotate-12 transition-transform"
+                />
+              </button>
               {/* 🔔 CAMPANITA (NO afecta estilos existentes) */}
               <NotificationBell user={user} />
 
@@ -94,6 +108,11 @@ const Navbar = ({ activeTab, setActiveTab, user, onLogout }) => {
                   pts
                 </span>
               </div>
+              <QrScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                user={user}
+              />
             </>
           )}
 

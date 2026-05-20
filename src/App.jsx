@@ -20,6 +20,8 @@ function App() {
   });
 
   const [activeTab, setActiveTab] = useState("inicio");
+  // 🛰️ Estado global de navegación
+  const [navTarget, setNavTarget] = useState(null);
 
   // Manejo de eventos
   const handleLoginSuccess = (usuarioReal) => {
@@ -30,6 +32,10 @@ function App() {
   const updateBalanceSilently = (usuarioActualizado) => {
     setUser(usuarioActualizado);
     localStorage.setItem("gti_user", JSON.stringify(usuarioActualizado));
+  };
+  const handleStartNavigation = (punto) => {
+    setNavTarget(punto);
+    setActiveTab("inicio");
   };
 
   const handleLogout = () => {
@@ -57,7 +63,12 @@ function App() {
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-10">
         {/* --- MODULOS SIEMPRE DISPONIBLES O PÚBLICOS --- */}
-        {tabRealAMostrar === "inicio" && <ModuloInicio />}
+        {tabRealAMostrar === "inicio" && (
+          <ModuloInicio
+            navTarget={navTarget}
+            clearNav={() => setNavTarget(null)}
+          />
+        )}
 
         {tabRealAMostrar === "registro" && (
           <Registro
@@ -80,7 +91,9 @@ function App() {
               <DashboardMaestro user={user} setActiveTab={setActiveTab} />
             )}
 
-            {tabRealAMostrar === "puntos" && <PuntosRecoleccion />}
+            {tabRealAMostrar === "puntos" && (
+              <PuntosRecoleccion onNavigate={handleStartNavigation} />
+            )}
 
             {/* Blindaje por rol */}
             {tabRealAMostrar === "catalogo" && user.rol !== "ENCARGADO" && (

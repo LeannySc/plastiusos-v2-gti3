@@ -4,7 +4,7 @@ import PanelStatus from "./Home/PanelStatus";
 import { LayoutDashboard, Database } from "lucide-react";
 import { API_BASE_URL } from "../api/config";
 
-const ModuloInicio = () => {
+const ModuloInicio = ({ navTarget, clearNav }) => {
   const [puntoSeleccionado, setPuntoSeleccionado] = useState(null);
   const [puntos, setPuntos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +93,9 @@ const ModuloInicio = () => {
             <MapaComando
               onSelectPunto={setPuntoSeleccionado}
               puntosData={puntos.filter((p) => p.activo === true)}
+              // 🚀 misión recibida desde App
+              navTarget={navTarget}
+              clearNav={clearNav}
             />
           </div>
         </div>
